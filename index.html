@@ -20,25 +20,7 @@
     <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
     
     <!-- API Utilities -->
-    <script>
-        // API utilities to handle environment differences between local and Vercel
-        function getApiBaseUrl() {
-            const isVercel = window.location.hostname.includes('vercel.app') || 
-                            window.location.hostname === 'reyfa.vercel.app';
-            return isVercel ? '/api' : '';
-        }
-        
-        function createApiUrl(endpoint) {
-            const baseUrl = getApiBaseUrl();
-            const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-            return `${baseUrl}${normalizedEndpoint}`;
-        }
-        
-        window.apiUtils = {
-            getApiBaseUrl,
-            createApiUrl
-        };
-    </script>
+    <script src="./resources/api-utils.js"></script>
     
     <!-- Custom Styles -->
     <style>
