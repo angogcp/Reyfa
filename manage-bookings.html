@@ -65,7 +65,12 @@
             
             async function fetchBookings() {
                 try {
-                    const response = await fetch('/api/bookings');
+                    // Use API utilities to get the correct URL for the current environment
+                    const apiUrl = window.apiUtils ? 
+                        window.apiUtils.createApiUrl('/bookings') : 
+                        (window.location.hostname.includes('vercel.app') ? '/api/bookings' : '/bookings');
+                    
+                    const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error('Failed to fetch bookings');
                     const bookings = await response.json();
                     renderBookings(bookings);
