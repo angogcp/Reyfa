@@ -70,7 +70,7 @@
                         window.apiUtils.createApiUrl('/bookings') : 
                         (window.location.hostname.includes('vercel.app') ? '/api/bookings' : '/bookings');
                     
-                    const response = await fetch(apiUrl);
+                    const response = await fetch(window.apiUtils.createApiUrl(apiUrl));
                     if (!response.ok) throw new Error('Failed to fetch bookings');
                     const bookings = await response.json();
                     renderBookings(bookings);
@@ -115,7 +115,7 @@
             
             async function updateStatus(id, status) {
                 try {
-                    const response = await fetch(`/api/bookings/${id}`, {
+                    const response = await fetch(window.apiUtils.createApiUrl(`/api/bookings/${id}`), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status })

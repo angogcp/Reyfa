@@ -1059,7 +1059,7 @@
                 email: localStorage.getItem('userEmail') || AppState.bookingData.email
             };
             
-            const response = await fetch('/api/bookings', {
+            const response = await fetch(window.apiUtils.createApiUrl('/api/bookings'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

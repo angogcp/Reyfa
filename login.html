@@ -414,7 +414,7 @@
             showLoadingState(true);
             
             // Use API for login
-            fetch('/api/login', {
+            fetch(window.apiUtils.createApiUrl('/api/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -638,7 +638,7 @@
             showRegLoadingState(true);
             
             // Use API for registration
-            fetch('/api/register', {
+            fetch(window.apiUtils.createApiUrl('/api/register'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
