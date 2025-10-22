@@ -7,9 +7,8 @@
  */
 function getApiBaseUrl() {
   // Check if we're in a Vercel environment
-  const isVercel = typeof window !== 'undefined' && 
-                  (window.location.hostname.includes('vercel.app') || 
-                   window.location.hostname === 'reyfa.vercel.app');
+  const isVercel = window.location.hostname.includes('vercel.app') || 
+                   window.location.hostname === 'reyfa.vercel.app';
   
   return isVercel ? '/api' : '';
 }
@@ -26,18 +25,8 @@ function createApiUrl(endpoint) {
   return `${baseUrl}${normalizedEndpoint}`;
 }
 
-// Export the utility functions for Node.js
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    getApiBaseUrl,
-    createApiUrl
-  };
-}
-
-// For browser usage
-if (typeof window !== 'undefined') {
-  window.apiUtils = {
-    getApiBaseUrl,
-    createApiUrl
-  };
-}
+// Make utilities available globally
+window.apiUtils = {
+  getApiBaseUrl,
+  createApiUrl
+};

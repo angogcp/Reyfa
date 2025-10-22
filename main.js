@@ -1,15 +1,5 @@
 // House Cleaning Service App - Main JavaScript
 
-// Load API utilities
-// Check if we're in a browser environment
-if (typeof window !== 'undefined') {
-    // Create a script element to load api-utils.js
-    const apiUtilsScript = document.createElement('script');
-    apiUtilsScript.src = '/api/_lib/api-utils.js';
-    apiUtilsScript.async = true;
-    document.head.appendChild(apiUtilsScript);
-}
-
 // Global state management
 const AppState = {
     currentLanguage: 'bm', // Default to Bahasa Melayu
@@ -517,8 +507,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    // Force language to Bahasa Melayu, ignoring saved preference
-    AppState.currentLanguage = 'bm';
+    // Load saved language preference or use default
+    const savedLanguage = localStorage.getItem('appLanguage');
+    if (savedLanguage) {
+        AppState.currentLanguage = savedLanguage;
+    }
     updateLanguageDisplay();
     
     // Initialize animations
