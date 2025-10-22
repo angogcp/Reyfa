@@ -7,13 +7,10 @@
  */
 function getApiBaseUrl() {
   // Check if we're in a Vercel environmentfunction getApiBaseUrl() {
+    alert("api-utils.js is executing!");
     const isVercel = window.location.hostname.includes('vercel.app') || 
                     window.location.hostname === 'reyfa.vercel.app';
-    console.log('Current hostname:', window.location.hostname);
-    console.log('Is Vercel environment:', isVercel);
-    const baseUrl = isVercel ? '/api' : '';
-    console.log('API Base URL:', baseUrl);
-    return baseUrl;
+    return isVercel ? '/api' : '';
 }
 
 /**
