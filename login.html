@@ -16,6 +16,9 @@
     
     <!-- Animation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- API Utilities -->
+    <script src="./resources/api-utils.js"></script>
     
     <!-- Custom Styles -->
     <style>
@@ -414,7 +417,7 @@
             showLoadingState(true);
             
             // Use API for login
-            fetch(window.apiUtils.createApiUrl('/api/login'), {
+            fetch(window.apiUtils.createApiUrl('/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -638,7 +641,7 @@
             showRegLoadingState(true);
             
             // Use API for registration
-            fetch(window.apiUtils.createApiUrl('/api/register'), {
+            fetch(window.apiUtils.createApiUrl('/register'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

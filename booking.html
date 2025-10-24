@@ -16,6 +16,9 @@
     
     <!-- Animation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- API Utilities -->
+    <script src="./resources/api-utils.js"></script>
     
     <!-- Custom Styles -->
     <style>
@@ -1059,7 +1062,7 @@
                 email: localStorage.getItem('userEmail') || AppState.bookingData.email
             };
             
-            const response = await fetch(window.apiUtils.createApiUrl('/api/bookings'), {
+            const response = await fetch(window.apiUtils.createApiUrl('/bookings'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -210,6 +210,7 @@
     </nav>
 
     <!-- Scripts -->
+    <script src="./resources/api-utils.js"></script>
     <script src="main.js"></script>
     <script>
         // Check login state
@@ -230,11 +231,7 @@
         async function loadUserBookings() {
             try {
                 // Use API utilities to get the correct URL for the current environment
-                const apiUrl = window.apiUtils ? 
-                    window.apiUtils.createApiUrl('/bookings') : 
-                    (window.location.hostname.includes('vercel.app') ? '/api/bookings' : '/bookings');
-                
-                const response = await fetch(window.apiUtils.createApiUrl(apiUrl));
+                const response = await fetch(window.apiUtils.createApiUrl('/bookings'));
                 const bookings = await response.json();
                 const userEmail = localStorage.getItem('userEmail');
                 const userBookings = bookings.filter(b => b.email === userEmail);

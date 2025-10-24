@@ -57,8 +57,14 @@
         </div>
     </main>
 
+    <script src="./resources/api-utils.js"></script>
     <script src="main.js"></script>
     <script>
+        // Require admin login
+        if (!localStorage.getItem('loggedIn') || localStorage.getItem('userRole') !== 'admin') {
+            window.location.href = 'login.html';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const bookingsTable = document.getElementById('bookingsTable');
             const refreshButton = document.getElementById('refreshBookings');
@@ -66,11 +72,7 @@
             async function fetchBookings() {
                 try {
                     // Use API utilities to get the correct URL for the current environment
-                    const apiUrl = window.apiUtils ? 
-                        window.apiUtils.createApiUrl('/bookings') : 
-                        (window.location.hostname.includes('vercel.app') ? '/api/bookings' : '/bookings');
-                    
-                    const response = await fetch(window.apiUtils.createApiUrl(apiUrl));
+                    const response = await fetch(window.apiUtils.createApiUrl('/bookings'));
                     if (!response.ok) throw new Error('Failed to fetch bookings');
                     const bookings = await response.json();
                     renderBookings(bookings);
@@ -85,52 +87,43 @@
                 bookings.forEach(booking => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${booking.id || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${booking.fullName} (${booking.phoneNumber})</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${booking.serviceType}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${booking.bookingDate} - ${booking.bookingTime}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium ${
-                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                booking.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
-                                booking.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }">${booking.status || 'pending'}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                            ${booking.status === 'pending' ? '<button class="accept-btn bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 mr-2" data-id="' + booking.id + '">Accept</button>' : ''}
-                            ${booking.status !== 'completed' ? '<button class="complete-btn bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700" data-id="' + booking.id + '">Complete</button>' : ''}
+                        <td class="px-6 py-4">${booking.fullName || '-'}</td>
+                        <td class="px-6 py-4">${booking.serviceType || '-'}</td>
+                        <td class="px-6 py-4">${booking.bookingDate || '-'} ${booking.bookingTime || ''}</td>
+                        <td class="px-6 py-4 capitalize">${booking.status || '-'}</td>
+                        <td class="px-6 py-4">RM ${booking.estimatedPrice ?? '-'}</td>
+                        <td class="px-6 py-4 space-x-2">
+                            <button class="px-3 py-1 rounded bg-teal-500 text-white hover:bg-teal-600" onclick="updateStatus('${booking.id}','accepted')">Accept</button>
+                            <button class="px-3 py-1 rounded bg-slate-700 text-white hover:bg-slate-800" onclick="updateStatus('${booking.id}','completed')">Complete</button>
+                            <a class="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600" href="https://wa.me/6${booking.phoneNumber}" target="_blank">WhatsApp</a>
+                            <a class="px-3 py-1 rounded bg-orange-500 text-white hover:bg-orange-600" href="tel:${booking.phoneNumber}">Call</a>
                         </td>
                     `;
                     bookingsTable.appendChild(row);
                 });
-                
-                // Add event listeners to buttons
-                document.querySelectorAll('.accept-btn').forEach(btn => {
-                    btn.addEventListener('click', () => updateStatus(btn.dataset.id, 'accepted'));
-                });
-                document.querySelectorAll('.complete-btn').forEach(btn => {
-                    btn.addEventListener('click', () => updateStatus(btn.dataset.id, 'completed'));
-                });
             }
-            
-            async function updateStatus(id, status) {
-                try {
-                    const response = await fetch(window.apiUtils.createApiUrl(`/api/bookings/${id}`), {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status })
-                    });
-                    if (!response.ok) throw new Error('Failed to update status');
-                    fetchBookings(); // Refresh the list
-                } catch (error) {
-                    console.error('Error updating status:', error);
-                    alert('Failed to update booking status');
-                }
-            }
-            
-            refreshButton.addEventListener('click', fetchBookings);
-            fetchBookings(); // Initial load
+
+            refreshButton?.addEventListener('click', fetchBookings);
+            fetchBookings();
         });
+
+        async function updateStatus(id, status) {
+            try {
+                const resp = await fetch(window.apiUtils.createApiUrl(`/bookings/${id}`), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (!resp.ok) throw new Error('Failed to update status');
+                alert(`Status updated to ${status}`);
+                // Reload bookings to reflect changes
+                const refreshButton = document.getElementById('refreshBookings');
+                refreshButton?.click();
+            } catch (err) {
+                console.error('Error updating status:', err);
+                alert('Error updating status');
+            }
+        }
     </script>
 </body>
 </html>
