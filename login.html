@@ -402,8 +402,8 @@
             errorElement.style.display = 'none';
         }
 
-        // Update handleLogin to use API
-        function handleLogin(e) {
+        // Update handleLogin to use API with production fallback
+        async function handleLogin(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
@@ -416,27 +416,41 @@
             
             showLoadingState(true);
             
-            // Use API for login
-            fetch(window.apiUtils.createApiUrl('/login'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                showLoadingState(false);
-                if (data.error) {
-                    loginFailed();
-                } else {
-                    loginSuccess({ email, role: data.role }, rememberMe);
+            const primaryUrl = window.apiUtils.createApiUrl('/login');
+            try {
+                const resp = await fetch(primaryUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                let data = {};
+                try { data = await resp.json(); } catch {}
+                if (resp.ok && !data.error) {
+                    showLoadingState(false);
+                    return loginSuccess({ email, role: data.role }, rememberMe);
                 }
-            })
-            .catch(error => {
+                // If production API path returns 404, try root path fallback
+                const host = window.location.hostname || '';
+                const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+                if (!isLocal && resp.status === 404) {
+                    const altResp = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    let altData = {};
+                    try { altData = await altResp.json(); } catch {}
+                    if (altResp.ok && !altData.error) {
+                        showLoadingState(false);
+                        return loginSuccess({ email, role: altData.role }, rememberMe);
+                    }
+                }
                 showLoadingState(false);
                 loginFailed();
-            });
+            } catch (error) {
+                showLoadingState(false);
+                loginFailed();
+            }
         }
 
         function authenticateUser(email, password) {
