@@ -1,4 +1,3 @@
-const { neon } = require('@neondatabase/serverless');
 const { Pool } = require('pg');
 
 let pool = null;
@@ -16,6 +15,18 @@ try {
 }
 
 const storage = require('./storage');
+
+// Detect KV availability (optional)
+function hasKv() {
+  try {
+    // If the package is installed and env vars exist, consider KV available
+    const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REST_URL || process.env.KV_URL || '';
+    const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REST_TOKEN || '';
+    return Boolean(kvUrl && kvToken);
+  } catch (_) {
+    return false;
+  }
+}
 
 // Check if we have a database connection
 function hasDb() {
@@ -311,6 +322,7 @@ async function updateBookingDetails(id, updates) {
 
 module.exports = {
   hasDb,
+  hasKv,
   initDb,
   getUser,
   registerUser,
