@@ -234,7 +234,7 @@
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="notificationCount">3</span>
                     </div>
                     
-                    <img src="resources/admin-avatar.jpg" alt="Admin" class="w-10 h-10 rounded-full border-2 border-white">
+                    <img src="resources/Reyfa.png" alt="Admin" class="w-10 h-10 rounded-full border-2 border-white">
                     
                     <button onclick="logout()" class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors" data-translate="logout">Log Keluar</button>
                 </div>
@@ -545,7 +545,6 @@
             initializeAdminDashboard();
             setupAdminEventListeners();
             loadBookings();
-            initializeChart();
             const createBtn = document.getElementById('createUserBtn');
             const refreshUsersBtn = document.getElementById('refreshUsers');
             if (createBtn) createBtn.addEventListener('click', handleCreateUser);
@@ -963,67 +962,13 @@
         }
 
         function initializeAdminDashboard() {
-            // Load bookings from localStorage
-            allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            
-            // Add some sample bookings if none exist
-            if (allBookings.length === 0) {
-                addSampleBookings();
-            }
-            
+            // Initialize with empty; real data loaded via API
+            allBookings = [];
             updateStats();
             filterBookings();
         }
         
-        function addSampleBookings() {
-            const sampleBookings = [
-                {
-                    bookingRef: 'IP-241012-001',
-                    serviceType: 'deep_cleaning',
-                    homeSize: 'medium',
-                    bookingDate: '2024-10-15',
-                    bookingTime: 'morning',
-                    fullName: 'Puan Sarah Lee',
-                    phoneNumber: '12-3456789',
-                    area: 'Taman Ipoh Jaya',
-                    streetAddress: 'Jalan Merpati 5',
-                    status: 'confirmed',
-                    estimatedPrice: 210,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    bookingRef: 'IP-241012-002',
-                    serviceType: 'basic_cleaning',
-                    homeSize: 'small',
-                    bookingDate: '2024-10-15',
-                    bookingTime: 'afternoon',
-                    fullName: 'Encik Ahmad Rahman',
-                    phoneNumber: '16-9876543',
-                    area: 'Bercham',
-                    streetAddress: 'Jalan Bercham Selatan',
-                    status: 'pending',
-                    estimatedPrice: 80,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    bookingRef: 'IP-241012-003',
-                    serviceType: 'move_in_out',
-                    homeSize: 'large',
-                    bookingDate: '2024-10-16',
-                    bookingTime: 'morning',
-                    fullName: 'Cik Tan Mei Ling',
-                    phoneNumber: '11-2345678',
-                    area: 'Menglembu',
-                    streetAddress: 'Jalan Menglembu 1',
-                    status: 'confirmed',
-                    estimatedPrice: 300,
-                    createdAt: new Date().toISOString()
-                }
-            ];
-            
-            allBookings = sampleBookings;
-            localStorage.setItem('bookings', JSON.stringify(allBookings));
-        }
+        
         
         function setupAdminEventListeners() {
             // Navigation
@@ -1069,9 +1014,9 @@
             );
             document.getElementById('weeklyCompleted').textContent = weeklyCompleted.length;
             
-            // Weekly revenue
+            // Weekly revenue (completed only)
             const weeklyRevenue = allBookings
-                .filter(b => thisWeek.includes(b.bookingDate))
+                .filter(b => thisWeek.includes(b.bookingDate) && b.status === 'completed')
                 .reduce((sum, b) => sum + (b.estimatedPrice || 0), 0);
             document.getElementById('weeklyRevenue').textContent = `RM ${weeklyRevenue.toLocaleString()}`;
         }
@@ -1097,10 +1042,13 @@
             
             filteredBookings = allBookings.filter(booking => {
                 // Search filter
+                const ref = ((booking.bookingRef ?? booking.id) ?? '').toString().toLowerCase();
+                const phone = (booking.phoneNumber ?? '').toString().toLowerCase();
+                const fullName = (booking.fullName ?? '').toString().toLowerCase();
                 const matchesSearch = !searchTerm || 
-                    booking.fullName.toLowerCase().includes(searchTerm) ||
-                    booking.phoneNumber.includes(searchTerm) ||
-                    booking.bookingRef.toLowerCase().includes(searchTerm);
+                    fullName.includes(searchTerm) ||
+                    phone.includes(searchTerm) ||
+                    ref.includes(searchTerm);
                 
                 // Status filter
                 const matchesStatus = !statusFilter || booking.status === statusFilter;
@@ -1183,7 +1131,7 @@
                             </div>
                             <div>
                                 <span class="text-slate-600">Rujukan:</span>
-                                <span class="font-medium">${booking.bookingRef}</span>
+                                <span class="font-medium">${booking.bookingRef || booking.id}</span>
                             </div>
                         </div>
                         
@@ -1202,7 +1150,7 @@
                                 Telefon
                             </a>
                             
-                            <select class="filter-select status-dropdown" data-booking-id="${booking.bookingRef}" onchange="updateBookingStatus(this)">
+                            <select class="filter-select status-dropdown" data-booking-id="${booking.id}" onchange="updateBookingStatus(this)">
                                 <option value="pending" ${booking.status === 'pending' ? 'selected' : ''}>Menunggu</option>
                                 <option value="confirmed" ${booking.status === 'confirmed' ? 'selected' : ''}>Disahkan</option>
                                 <option value="in-progress" ${booking.status === 'in-progress' ? 'selected' : ''}>Dalam Proses</option>
@@ -1219,29 +1167,52 @@
             const bookingId = selectElement.getAttribute('data-booking-id');
             const newStatus = selectElement.value;
             
-            // Update in localStorage
-            const bookingIndex = allBookings.findIndex(b => b.bookingRef === bookingId);
-            if (bookingIndex !== -1) {
-                allBookings[bookingIndex].status = newStatus;
-                localStorage.setItem('bookings', JSON.stringify(allBookings));
-                
-                // Update stats and re-render
-                updateStats();
-                filterBookings();
-                
-                // Show notification
-                showNotification('Status tempahan dikemaskini', 'success');
-            }
+            (async () => {
+                try {
+                    const resp = await fetch(window.apiUtils.createApiUrl(`/bookings/${bookingId}`), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.error || 'Gagal mengemaskini status');
+                    const idx = allBookings.findIndex(b => (b.id || '').toString() === (bookingId || '').toString());
+                    if (idx !== -1) {
+                        allBookings[idx].status = newStatus;
+                    }
+                    updateStats();
+                    filterBookings();
+                    initializeChart();
+                    showNotification('Status tempahan dikemaskini', 'success');
+                } catch (err) {
+                    console.error('Update status error:', err);
+                    showNotification('Gagal mengemaskini status', 'error');
+                }
+            })();
         }
         
         function initializeChart() {
             const chartDom = document.getElementById('monthlyChart');
             const myChart = echarts.init(chartDom);
             
-            // Sample data for the last 6 months
-            const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
-            const completedData = [8, 12, 15, 18, 22, 25];
-            const revenueData = [1200, 1800, 2200, 2600, 3200, 3800];
+            // Compute last 6 months labels and data from real bookings
+            const monthsMeta = [];
+            const now = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const label = d.toLocaleString('default', { month: 'short' });
+                monthsMeta.push({ key, label });
+            }
+            const months = monthsMeta.map(m => m.label);
+            const completedData = monthsMeta.map(m =>
+                allBookings.filter(b => b.status === 'completed' && (b.bookingDate || '').slice(0, 7) === m.key).length
+            );
+            const revenueData = monthsMeta.map(m =>
+                allBookings
+                    .filter(b => b.status === 'completed' && (b.estimatedPrice || 0) && (b.bookingDate || '').slice(0, 7) === m.key)
+                    .reduce((sum, b) => sum + (b.estimatedPrice || 0), 0)
+            );
             
             const option = {
                 tooltip: {
@@ -1303,9 +1274,21 @@
         }
         
         function loadBookings() {
-            // This function can be used to load bookings from a server
-            // For now, we use localStorage
-            filterBookings();
+            // Load bookings from API and refresh dashboard
+            (async () => {
+                try {
+                    const resp = await fetch(window.apiUtils.createApiUrl('/bookings'));
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.error || 'Gagal memuat tempahan');
+                    allBookings = Array.isArray(data) ? data : [];
+                    updateStats();
+                    filterBookings();
+                    initializeChart();
+                } catch (err) {
+                    console.error('Load bookings error:', err);
+                    showNotification('Gagal memuat tempahan dari server', 'error');
+                }
+            })();
         }
     </script>
 </body>
