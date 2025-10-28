@@ -331,6 +331,11 @@
                     <option value="month">Bulan Ini</option>
                     <option value="all">Semua</option>
                 </select>
+                <select id="viewMode" class="filter-select">
+                    <option value="cards">Kad</option>
+                    <option value="table">Jadual</option>
+                </select>
+                <button id="exportExcelBtn" class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Eksport Excel</button>
             </div>
         </div>
 
@@ -515,11 +520,13 @@
     <!-- Scripts -->
     <script src="./resources/api-utils.js"></script>
     <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         // Admin dashboard specific functionality
         let currentView = 'today';
         let allBookings = [];
         let filteredBookings = [];
+        let bookingsViewMode = 'cards';
         // Accounts view state
         let usersCache = [];
         let usersFilterText = '';
@@ -985,6 +992,14 @@
             document.getElementById('searchInput').addEventListener('input', filterBookings);
             document.getElementById('statusFilter').addEventListener('change', filterBookings);
             document.getElementById('dateFilter').addEventListener('change', filterBookings);
+            const viewModeSel = document.getElementById('viewMode');
+            if (viewModeSel) {
+                viewModeSel.addEventListener('change', () => { bookingsViewMode = viewModeSel.value; renderBookings(); });
+            }
+            const exportBtn = document.getElementById('exportExcelBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportFilteredToExcel);
+            }
         }
         
         /* duplicate switchView removed; unified logic exists above with Accounts UI support */
@@ -1081,6 +1096,50 @@
             renderBookings();
         }
         
+        // Export current filtered bookings to Excel
+        function exportFilteredToExcel() {
+            try {
+                if (typeof XLSX === 'undefined' || !XLSX.utils) {
+                    showToast('error', 'Perpustakaan Excel tidak dimuat');
+                    return;
+                }
+                const rows = (Array.isArray(filteredBookings) ? filteredBookings : allBookings).map(b => {
+                    const svc = serviceData[b.serviceType] || {};
+                    const svcName = svc.name ? svc.name[AppState.currentLanguage] : (b.serviceType || '');
+                    const statusText = translations[AppState.currentLanguage][b.status] || b.status;
+                    const timeLabel = b.bookingTime === 'morning' ? '9:00 AM' : '2:00 PM';
+                    const price = typeof b.estimatedPrice === 'number' ? b.estimatedPrice : (parseFloat(b.estimatedPrice) || 0);
+                    return {
+                        'Rujukan': (b.bookingRef ?? b.id) ?? '',
+                        'Nama': b.fullName || '',
+                        'Telefon': b.phoneNumber || '',
+                        'Email': b.email || '',
+                        'Perkhidmatan': svcName,
+                        'Kawasan': b.area || '',
+                        'Alamat': b.streetAddress || '',
+                        'Poskod': b.postcode || '',
+                        'Tarikh': b.bookingDate || '',
+                        'Masa': timeLabel,
+                        'Status': statusText,
+                        'Harga (RM)': price,
+                        'Catatan': b.notes || '',
+                        'Dibuat Pada': b.createdAt || ''
+                    };
+                });
+                const ws = XLSX.utils.json_to_sheet(rows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Tempahan');
+                const now = new Date();
+                const pad = n => String(n).padStart(2, '0');
+                const fileName = `tempahan_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                showToast('success', 'Eksport Excel berjaya');
+            } catch (err) {
+                console.error('Export Excel error:', err);
+                showToast('error', err.message || 'Gagal eksport Excel');
+            }
+        }
+
         function renderBookings() {
             const bookingList = document.getElementById('bookingList');
             
@@ -1092,6 +1151,54 @@
                         </svg>
                         <h3 class="text-lg font-semibold text-slate-600 mb-2">Tiada Tempahan</h3>
                         <p class="text-slate-500">Tiada tempahan yang sepadan dengan kriteria yang dipilih.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Table view
+            if (bookingsViewMode === 'table') {
+                const rowsHtml = filteredBookings.map(b => {
+                    const service = serviceData[b.serviceType] || {};
+                    const serviceName = (service.name ? service.name[AppState.currentLanguage] : (b.serviceType || ''));
+                    const statusText = translations[AppState.currentLanguage][b.status] || b.status;
+                    const ref = (b.bookingRef ?? b.id) ?? '';
+                    const timeLabel = b.bookingTime === 'morning' ? '9:00 AM' : '2:00 PM';
+                    const price = typeof b.estimatedPrice === 'number' ? b.estimatedPrice : (parseFloat(b.estimatedPrice) || 0);
+                    return `
+                        <tr>
+                            <td class="px-6 py-3 text-sm text-slate-800">${ref}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${b.fullName || ''}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${serviceName}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${b.area || ''}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${b.bookingDate || ''}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${timeLabel}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${statusText}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">RM ${price}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${b.phoneNumber || ''}</td>
+                            <td class="px-6 py-3 text-sm text-slate-800">${b.notes || ''}</td>
+                        </tr>
+                    `;
+                }).join('');
+                bookingList.innerHTML = `
+                    <div class="overflow-x-auto bg-white rounded-lg shadow">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Rujukan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Perkhidmatan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Kawasan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tarikh</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Masa</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Harga (RM)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Telefon</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">${rowsHtml}</tbody>
+                        </table>
                     </div>
                 `;
                 return;
