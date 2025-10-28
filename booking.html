@@ -1071,7 +1071,12 @@
             });
             
             if (response.ok) {
+                const data = await response.json();
                 showNotification('Tempahan berjaya! Kami akan hubungi anda segera.', 'success');
+                // Store last booking id for edit link
+                if (data && data.id) {
+                    localStorage.setItem('lastBookingId', data.id);
+                }
                 // Clear local storage
                 localStorage.removeItem('bookingData');
                 localStorage.removeItem('currentStep');

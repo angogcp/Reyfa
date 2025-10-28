@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     newBooking.status = 'pending';
 
     await addBooking(newBooking);
-    return res.status(201).json({ message: 'Booking created' });
+    return res.status(201).json({ message: 'Booking created', id: newBooking.id });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });

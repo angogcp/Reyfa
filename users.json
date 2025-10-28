@@ -2,7 +2,8 @@
   {
     "email": "admin@cleanhome.ipoh",
     "password": "admin123",
-    "role": "admin"
+    "role": "admin",
+    "name": ""
   },
   {
     "email": "owner@cleanhome.ipoh",
@@ -11,7 +12,8 @@
   },
   {
     "email": "waiwai12123@2925.com",
-    "password": "waiwai",
-    "role": "user"
+    "password": "waiwai88",
+    "role": "user",
+    "name": "waiwai"
   }
 ]

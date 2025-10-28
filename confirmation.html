@@ -207,6 +207,7 @@
                 <div class="booking-ref-container">
                     <p class="text-slate-600 mb-2" data-translate="bookingReference">Rujukan Tempahan</p>
                     <div class="booking-ref" id="bookingRef">IP-241012-001</div>
+                    <a id="editLink" href="#" class="inline-block mt-4 px-4 py-2 rounded-md bg-slate-800 text-white hidden">Kemaskini Tempahan</a>
                 </div>
             </div>
 
@@ -319,11 +320,22 @@
         });
         
         function initializeSuccessPage() {
-            // Get booking reference from localStorage
+            // Prefer server booking id if available
+            const bookingId = localStorage.getItem('lastBookingId');
             const bookingRef = localStorage.getItem('lastBookingRef');
-            if (bookingRef) {
-                document.getElementById('bookingRef').textContent = bookingRef;
-                loadBookingDetails(bookingRef);
+            const refToShow = bookingId || bookingRef;
+            if (refToShow) {
+                document.getElementById('bookingRef').textContent = refToShow;
+                // Add edit link
+                const editLinkEl = document.getElementById('editLink');
+                if (editLinkEl && bookingId) {
+                    editLinkEl.href = `booking-edit.html?id=${bookingId}`;
+                    editLinkEl.classList.remove('hidden');
+                }
+                // Load local booking details only if local ref exists
+                if (bookingRef) {
+                    loadBookingDetails(bookingRef);
+                }
             }
             
             // Update language display

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kemaskini Tempahan | CleanHome Ipoh</title>
+  <link rel="stylesheet" href="./resources/styles.css" />
+  <style>
+    .container { max-width: 880px; margin: 0 auto; padding: 24px; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 24px; }
+    .field { margin-bottom: 16px; }
+    .label { display: block; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    .input { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; }
+    .actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #22c55e; color: #fff; border: none; }
+    .btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
+    .note { font-size: 14px; color: #64748b; }
+    .alert { padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; }
+    .alert-info { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .alert-success { background: #f0fdf4; color: #14532d; border: 1px solid #bbf7d0; }
+    .alert-error { background: #fef2f2; color: #7f1d1d; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body class="bg-slate-50">
+  <main class="container">
+    <h1 class="text-2xl font-bold text-slate-800 mb-4">Kemaskini Tempahan</h1>
+    <p class="note">Masukkan rujukan tempahan anda untuk mengemaskini maklumat tanpa perlu daftar akaun.</p>
+
+    <div id="message" class="hidden"></div>
+
+    <div class="card">
+      <div id="lookupSection" class="field">
+        <label class="label" for="bookingId">Rujukan Tempahan</label>
+        <input id="bookingId" class="input" placeholder="cth: 1697043892000" />
+        <div class="actions">
+          <button id="loadBooking" class="btn btn-secondary">Cari Tempahan</button>
+          <a href="booking.html" class="btn btn-secondary">Buat Tempahan Baharu</a>
+        </div>
+      </div>
+
+      <form id="editForm" class="hidden">
+        <div class="alert alert-info">Anda boleh ubah tarikh, masa dan alamat. Status tempahan akan dikemaskini oleh admin.</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="field">
+            <label class="label" for="fullName">Nama Penuh</label>
+            <input id="fullName" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="phoneNumber">No. Telefon</label>
+            <input id="phoneNumber" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="bookingDate">Tarikh</label>
+            <input id="bookingDate" type="date" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="bookingTime">Masa</label>
+            <input id="bookingTime" type="time" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="area">Kawasan</label>
+            <input id="area" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="streetAddress">Alamat</label>
+            <input id="streetAddress" class="input" />
+          </div>
+          <div class="field">
+            <label class="label" for="postcode">Poskod</label>
+            <input id="postcode" class="input" />
+          </div>
+          <div class="field md:col-span-2">
+            <label class="label" for="notes">Catatan (pilihan)</label>
+            <textarea id="notes" class="input" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="saveChanges" class="btn btn-primary">Simpan Perubahan</button>
+          <a id="backToManage" href="manage-bookings.html" class="btn btn-secondary">Halaman Admin</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="./resources/api-utils.js"></script>
+  <script>
+    const messageEl = document.getElementById('message');
+    const lookupSection = document.getElementById('lookupSection');
+    const editForm = document.getElementById('editForm');
+    const bookingIdInput = document.getElementById('bookingId');
+    const loadBtn = document.getElementById('loadBooking');
+    const saveBtn = document.getElementById('saveChanges');
+
+    const fields = ['fullName','phoneNumber','bookingDate','bookingTime','area','streetAddress','postcode','notes'];
+
+    function showMessage(text, type = 'info') {
+      messageEl.className = `alert alert-${type}`;
+      messageEl.textContent = text;
+      messageEl.classList.remove('hidden');
+    }
+
+    function hideMessage() {
+      messageEl.className = 'hidden';
+      messageEl.textContent = '';
+    }
+
+    function getIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id');
+    }
+
+    async function loadBooking(id) {
+      hideMessage();
+      try {
+        const resp = await fetch(window.apiUtils.createApiUrl(`/bookings/${id}`));
+        if (!resp.ok) throw new Error('Tempahan tidak dijumpai');
+        const booking = await resp.json();
+        // Fill form
+        fields.forEach(f => {
+          const el = document.getElementById(f);
+          if (el && typeof booking[f] !== 'undefined') {
+            el.value = booking[f];
+          }
+        });
+        editForm.classList.remove('hidden');
+        lookupSection.classList.add('hidden');
+        saveBtn.onclick = () => saveChanges(id);
+        showMessage(`Tempahan ${id} dimuatkan`, 'success');
+      } catch (err) {
+        console.error(err);
+        showMessage(err.message || 'Ralat memuatkan tempahan', 'error');
+      }
+    }
+
+    async function saveChanges(id) {
+      hideMessage();
+      const payload = {};
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) payload[f] = el.value;
+      });
+      try {
+        const resp = await fetch(window.apiUtils.createApiUrl(`/bookings/${id}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error('Gagal menyimpan perubahan');
+        const data = await resp.json();
+        showMessage('Perubahan berjaya disimpan', 'success');
+      } catch (err) {
+        console.error(err);
+        showMessage(err.message || 'Ralat menyimpan perubahan', 'error');
+      }
+    }
+
+    // Hook up manual lookup
+    loadBtn.addEventListener('click', () => {
+      const id = bookingIdInput.value.trim();
+      if (!id) return showMessage('Sila masukkan rujukan tempahan', 'error');
+      loadBooking(id);
+    });
+
+    // If id present in URL, auto-load
+    const idFromUrl = getIdFromUrl();
+    if (idFromUrl) {
+      bookingIdInput.value = idFromUrl;
+      loadBooking(idFromUrl);
+    }
+  </script>
+</body>
+</html>

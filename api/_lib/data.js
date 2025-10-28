@@ -109,6 +109,81 @@ async function registerUser(user) {
   return true;
 }
 
+async function listUsers() {
+  if (hasDb()) {
+    try {
+      await initDb();
+      const result = await pool.query('SELECT * FROM users');
+      if (result.rows.length > 0) return result.rows;
+      const fallback = storage.readData('users.json');
+      // Seed DB if empty
+      for (const u of fallback) {
+        await pool.query('INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING', [u.email, u.password, u.name, u.role]);
+      }
+      return fallback;
+    } catch (error) {
+      console.error('Database error in listUsers:', error);
+      return [];
+    }
+  }
+  return storage.readData('users.json');
+}
+
+async function updateUser(email, updates) {
+  const allowedFields = ['password','name','role'];
+  if (hasDb()) {
+    try {
+      await initDb();
+      const setClauses = [];
+      const values = [];
+      let i = 1;
+      for (const f of allowedFields) {
+        if (Object.prototype.hasOwnProperty.call(updates, f)) {
+          setClauses.push(`${f} = $${i}`);
+          values.push(updates[f]);
+          i++;
+        }
+      }
+      if (setClauses.length === 0) return false;
+      values.push(email);
+      const query = `UPDATE users SET ${setClauses.join(', ')} WHERE email = $${i} RETURNING *`;
+      const result = await pool.query(query, values);
+      return result.rowCount > 0 ? result.rows[0] : false;
+    } catch (error) {
+      console.error('Database error in updateUser:', error);
+      return false;
+    }
+  }
+  const users = storage.readData('users.json');
+  const idx = users.findIndex(u => u.email === email);
+  if (idx === -1) return false;
+  allowedFields.forEach(f => {
+    if (Object.prototype.hasOwnProperty.call(updates, f)) {
+      users[idx][f] = updates[f];
+    }
+  });
+  storage.writeData('users.json', users);
+  return users[idx];
+}
+
+async function deleteUser(email) {
+  if (hasDb()) {
+    try {
+      await initDb();
+      const result = await pool.query('DELETE FROM users WHERE email = $1', [email]);
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Database error in deleteUser:', error);
+      return false;
+    }
+  }
+  let users = storage.readData('users.json');
+  const before = users.length;
+  users = users.filter(u => u.email !== email);
+  storage.writeData('users.json', users);
+  return users.length < before;
+}
+
 // Bookings
 async function listBookings() {
   if (hasDb()) {
@@ -160,6 +235,21 @@ async function addBooking(booking) {
   return true;
 }
 
+async function getBookingById(id) {
+  if (hasDb()) {
+    try {
+      await initDb();
+      const result = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Database error in getBookingById:', error);
+      return null;
+    }
+  }
+  const bookings = storage.readData('bookings.json');
+  return bookings.find(b => b.id === id) || null;
+}
+
 async function updateBookingStatus(id, status) {
   if (hasDb()) {
     try {
@@ -180,12 +270,56 @@ async function updateBookingStatus(id, status) {
   return true;
 }
 
+async function updateBookingDetails(id, updates) {
+  const allowedFields = ['bookingDate','bookingTime','area','streetAddress','postcode','fullName','phoneNumber','notes','serviceType','hours','homeSize','status'];
+
+  if (hasDb()) {
+    try {
+      await initDb();
+      const setClauses = [];
+      const values = [];
+      let i = 1;
+      for (const field of allowedFields) {
+        if (Object.prototype.hasOwnProperty.call(updates, field)) {
+          setClauses.push(`${field} = $${i}`);
+          values.push(updates[field]);
+          i++;
+        }
+      }
+      if (setClauses.length === 0) return false;
+      values.push(id);
+      const query = `UPDATE bookings SET ${setClauses.join(', ')} WHERE id = $${i} RETURNING *`;
+      const result = await pool.query(query, values);
+      return result.rowCount > 0 ? result.rows[0] : false;
+    } catch (error) {
+      console.error('Database error in updateBookingDetails:', error);
+      return false;
+    }
+  }
+
+  const bookings = storage.readData('bookings.json');
+  const idx = bookings.findIndex(b => b.id === id);
+  if (idx === -1) return false;
+  allowedFields.forEach(field => {
+    if (Object.prototype.hasOwnProperty.call(updates, field)) {
+      bookings[idx][field] = updates[field];
+    }
+  });
+  storage.writeData('bookings.json', bookings);
+  return bookings[idx];
+}
+
 module.exports = {
   hasDb,
   initDb,
   getUser,
   registerUser,
+  listUsers,
+  updateUser,
+  deleteUser,
   listBookings,
   addBooking,
+  getBookingById,
   updateBookingStatus,
+  updateBookingDetails,
 };

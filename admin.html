@@ -338,6 +338,142 @@
         <div id="bookingList">
             <!-- Bookings will be populated by JavaScript -->
         </div>
+        
+        <!-- Add Booking (Admin) -->
+        <div id="addBookingView" class="hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-display font-semibold text-lg text-slate-800 mb-4">Tambah Tempahan Baru</h3>
+                <form id="addBookingForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Jenis Perkhidmatan</label>
+                            <select id="addServiceType" class="filter-select w-full" required>
+                                <option value="basic_cleaning">Pembersihan Asas</option>
+                                <option value="deep_cleaning">Pembersihan Mendalam</option>
+                                <option value="move_in_out">Pindah Masuk/Keluar</option>
+                                <option value="post_renovation">Pasca Renovasi</option>
+                                <option value="hourly_cleaning">Pembersihan Mengikut Jam</option>
+                            </select>
+                        </div>
+                        <div id="homeSizeGroup">
+                            <label class="block text-sm text-slate-700 mb-1">Saiz Rumah</label>
+                            <select id="addHomeSize" class="filter-select w-full">
+                                <option value="small">Kecil</option>
+                                <option value="medium">Sederhana</option>
+                                <option value="large">Besar</option>
+                            </select>
+                        </div>
+                        <div id="hoursGroup" class="hidden">
+                            <label class="block text-sm text-slate-700 mb-1">Jam</label>
+                            <input id="addHours" type="number" min="1" class="search-input w-full" placeholder="Contoh: 3">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Tarikh Tempahan</label>
+                            <input id="addBookingDate" type="date" class="search-input w-full" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Masa</label>
+                            <select id="addBookingTime" class="filter-select w-full" required>
+                                <option value="morning">Pagi (9-12 AM)</option>
+                                <option value="afternoon">Petang (2-5 PM)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Kawasan</label>
+                            <input id="addArea" type="text" class="search-input w-full" placeholder="Contoh: Ipoh" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm text-slate-700 mb-1">Alamat Jalan</label>
+                            <input id="addStreetAddress" type="text" class="search-input w-full" placeholder="Contoh: Jalan Merpati 5" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Poskod</label>
+                            <input id="addPostcode" type="text" class="search-input w-full" placeholder="Contoh: 31200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Nama Penuh</label>
+                            <input id="addFullName" type="text" class="search-input w-full" placeholder="Contoh: Ahmad" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Nombor Telefon</label>
+                            <input id="addPhoneNumber" type="text" class="search-input w-full" placeholder="Contoh: 1133279245" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-700 mb-1">Email (pilihan)</label>
+                            <input id="addEmail" type="email" class="search-input w-full" placeholder="Contoh: user@domain.com">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm text-slate-700 mb-1">Catatan (pilihan)</label>
+                            <textarea id="addNotes" class="search-input w-full" rows="3" placeholder="Arahan khas"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2">
+                        <div class="text-slate-700">Anggaran Harga: <span class="font-semibold" id="addEstimatedPrice">RM --</span></div>
+                        <div class="flex gap-2">
+                            <button type="button" id="cancelAddBooking" class="bg-slate-200 text-slate-800 px-4 py-2 rounded">Batal</button>
+                            <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Simpan Tempahan</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Accounts Management -->
+        <div id="accountsView" class="hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-display font-semibold text-lg text-slate-800">Pengurusan Akaun</h3>
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="searchUsersInput" class="search-input" style="max-width:220px" placeholder="Cari email/nama">
+                        <button id="refreshUsers" class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Refresh</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-2">
+                    <select id="roleFilterUsers" class="filter-select">
+                        <option value="">Semua Peranan</option>
+                        <option value="user">Pengguna</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <select id="usersPageSize" class="filter-select">
+                        <option value="5">5 / halaman</option>
+                        <option value="10" selected>10 / halaman</option>
+                        <option value="20">20 / halaman</option>
+                    </select>
+                    <div id="usersLoading" class="text-sm text-slate-600 hidden">Memuat pengguna...</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <input type="email" id="newUserEmail" class="search-input" placeholder="Email">
+                    <input type="text" id="newUserName" class="search-input" placeholder="Nama">
+                    <input type="password" id="newUserPassword" class="search-input" placeholder="Kata Laluan (min 8)">
+                    <select id="newUserRole" class="filter-select">
+                        <option value="user">Pengguna</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button id="createUserBtn" class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 mb-4">Tambah Pengguna</button>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Peranan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Kata Laluan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable" class="bg-white divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                    <div id="usersPageInfo" class="text-sm text-slate-600">Halaman 1/1</div>
+                    <div class="flex gap-2">
+                        <button id="usersPrev" class="bg-slate-200 text-slate-800 px-3 py-2 rounded">Sebelum</button>
+                        <button id="usersNext" class="bg-slate-200 text-slate-800 px-3 py-2 rounded">Seterusnya</button>
+                    </div>
+                </div>
+                <p id="usersMessage" class="mt-3 text-sm text-slate-600"></p>
+            </div>
+        </div>
     </div>
 
     <!-- Bottom Navigation -->
@@ -377,20 +513,455 @@
     </nav>
 
     <!-- Scripts -->
+    <script src="./resources/api-utils.js"></script>
     <script src="main.js"></script>
     <script>
         // Admin dashboard specific functionality
         let currentView = 'today';
         let allBookings = [];
         let filteredBookings = [];
+        // Accounts view state
+        let usersCache = [];
+        let usersFilterText = '';
+        let usersFilterRole = '';
+        let usersPageSize = 10;
+        let usersPage = 1;
+        
+        // Check login state (admin only)
+        if (!localStorage.getItem('loggedIn') || localStorage.getItem('userRole') !== 'admin') {
+            window.location.href = 'login.html';
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('savedEmail');
+            window.location.href = 'login.html';
+        }
         
         document.addEventListener('DOMContentLoaded', function() {
             initializeAdminDashboard();
             setupAdminEventListeners();
             loadBookings();
             initializeChart();
+            const createBtn = document.getElementById('createUserBtn');
+            const refreshUsersBtn = document.getElementById('refreshUsers');
+            if (createBtn) createBtn.addEventListener('click', handleCreateUser);
+            if (refreshUsersBtn) refreshUsersBtn.addEventListener('click', loadUsers);
+            const searchInput = document.getElementById('searchUsersInput');
+            const roleFilter = document.getElementById('roleFilterUsers');
+            const pageSizeSel = document.getElementById('usersPageSize');
+            const prevBtn = document.getElementById('usersPrev');
+            const nextBtn = document.getElementById('usersNext');
+            if (searchInput) searchInput.addEventListener('input', () => { usersFilterText = searchInput.value.trim().toLowerCase(); usersPage = 1; applyUsersFilters(); });
+            if (roleFilter) roleFilter.addEventListener('change', () => { usersFilterRole = roleFilter.value; usersPage = 1; applyUsersFilters(); });
+            if (pageSizeSel) pageSizeSel.addEventListener('change', () => { usersPageSize = parseInt(pageSizeSel.value, 10) || 10; usersPage = 1; applyUsersFilters(); });
+            if (prevBtn) prevBtn.addEventListener('click', () => { if (usersPage > 1) { usersPage--; renderUsersPage(); } });
+            if (nextBtn) nextBtn.addEventListener('click', () => { const total = Math.ceil((filteredUsersForAccounts().length) / usersPageSize); if (usersPage < total) { usersPage++; renderUsersPage(); } });
         });
         
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); });
+            document.querySelector(`[data-view="${view}"]`).classList.add('active');
+            const filterBarEl = document.querySelector('.filter-bar');
+            const chartContainerEl = document.querySelector('.chart-container');
+            const bookingListEl = document.getElementById('bookingList');
+            const accountsViewEl = document.getElementById('accountsView');
+            const addBookingViewEl = document.getElementById('addBookingView');
+            if (view === 'settings') {
+                filterBarEl.classList.add('hidden');
+                chartContainerEl.classList.add('hidden');
+                bookingListEl.classList.add('hidden');
+                addBookingViewEl.classList.add('hidden');
+                accountsViewEl.classList.remove('hidden');
+                loadUsers();
+            } else if (view === 'add') {
+                accountsViewEl.classList.add('hidden');
+                filterBarEl.classList.add('hidden');
+                chartContainerEl.classList.add('hidden');
+                bookingListEl.classList.add('hidden');
+                addBookingViewEl.classList.remove('hidden');
+                setupAddBookingForm();
+            } else {
+                accountsViewEl.classList.add('hidden');
+                addBookingViewEl.classList.add('hidden');
+                filterBarEl.classList.remove('hidden');
+                chartContainerEl.classList.remove('hidden');
+                bookingListEl.classList.remove('hidden');
+                if (view === 'today') {
+                    document.getElementById('dateFilter').value = 'today';
+                } else if (view === 'all') {
+                    document.getElementById('dateFilter').value = 'all';
+                }
+                filterBookings();
+            }
+        }
+        // Toast helper
+        function showToast(type, text) {
+            const containerId = 'toast-container';
+            let container = document.getElementById(containerId);
+            if (!container) {
+                container = document.createElement('div');
+                container.id = containerId;
+                container.style.position = 'fixed';
+                container.style.top = '16px';
+                container.style.right = '16px';
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+            }
+            const el = document.createElement('div');
+            el.className = `px-4 py-2 rounded shadow mb-2 text-white ${type === 'success' ? 'bg-teal-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-700'}`;
+            el.textContent = text;
+            container.appendChild(el);
+            setTimeout(() => { el.remove(); }, 3000);
+        }
+        function setUsersLoading(on) {
+            const el = document.getElementById('usersLoading');
+            if (!el) return;
+            if (on) el.classList.remove('hidden'); else el.classList.add('hidden');
+        }
+        async function loadUsers() {
+            try {
+                setUsersLoading(true);
+                const response = await fetch(window.apiUtils.createApiUrl('/users'), {
+                    headers: { 'X-User-Role': localStorage.getItem('userRole') || '' }
+                });
+                let users = [];
+                if (!response.ok) {
+                    let errMsg = 'Failed to fetch users';
+                    try { const errJson = await response.json(); errMsg = errJson.error || errMsg; } catch {}
+                    if (response.status === 403) {
+                        showToast('error', 'Admin access required. Please log in as admin.');
+                    }
+                    throw new Error(`${errMsg} (status ${response.status})`);
+                }
+                users = await response.json();
+                usersCache = Array.isArray(users) ? users : [];
+                usersPage = 1;
+                applyUsersFilters();
+                document.getElementById('usersMessage').textContent = '';
+            } catch (err) {
+                console.error('Load users error:', err);
+                const msgEl = document.getElementById('usersMessage');
+                if (msgEl) msgEl.textContent = `Ralat memuat pengguna: ${err.message}`;
+                showToast('error', err.message || 'Gagal memuat pengguna');
+            } finally {
+                setUsersLoading(false);
+            }
+        }
+        
+        // ====== Add Booking (Admin) helpers ======
+        function setupAddBookingForm() {
+            // Prefill date to today
+            const dateInput = document.getElementById('addBookingDate');
+            if (dateInput && !dateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+            const serviceSel = document.getElementById('addServiceType');
+            const homeSizeGroup = document.getElementById('homeSizeGroup');
+            const hoursGroup = document.getElementById('hoursGroup');
+            const homeSizeSel = document.getElementById('addHomeSize');
+            const hoursInput = document.getElementById('addHours');
+            const priceEl = document.getElementById('addEstimatedPrice');
+            const cancelBtn = document.getElementById('cancelAddBooking');
+            const form = document.getElementById('addBookingForm');
+            if (!serviceSel || !form) return;
+
+            function toggleServiceSpecific() {
+                const val = serviceSel.value;
+                if (val === 'hourly_cleaning') {
+                    homeSizeGroup.classList.add('hidden');
+                    hoursGroup.classList.remove('hidden');
+                } else {
+                    hoursGroup.classList.add('hidden');
+                    homeSizeGroup.classList.remove('hidden');
+                }
+                updateEstimatedPrice();
+            }
+            function updateEstimatedPrice() {
+                const type = serviceSel.value;
+                let est = 0;
+                if (type === 'hourly_cleaning') {
+                    const hrs = parseInt(hoursInput.value || '0', 10);
+                    est = (serviceData.hourly_cleaning?.basePrice || 25) * (hrs > 0 ? hrs : 0);
+                } else {
+                    const size = homeSizeSel.value || 'small';
+                    const svc = serviceData[type];
+                    const base = svc?.basePrice || 0;
+                    const mult = (svc?.priceMultiplier || {})[size] || 1;
+                    est = Math.round(base * mult);
+                }
+                if (priceEl) priceEl.textContent = est > 0 ? `RM ${est}` : 'RM --';
+            }
+
+            serviceSel.addEventListener('change', toggleServiceSpecific);
+            homeSizeSel.addEventListener('change', updateEstimatedPrice);
+            hoursInput.addEventListener('input', updateEstimatedPrice);
+            updateEstimatedPrice();
+
+            form.addEventListener('submit', handleAddBookingSubmit);
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    switchView('all');
+                });
+            }
+        }
+
+        async function handleAddBookingSubmit(e) {
+            e.preventDefault();
+            const serviceType = document.getElementById('addServiceType').value;
+            const bookingDate = document.getElementById('addBookingDate').value;
+            const bookingTime = document.getElementById('addBookingTime').value;
+            const area = document.getElementById('addArea').value.trim();
+            const streetAddress = document.getElementById('addStreetAddress').value.trim();
+            const postcode = document.getElementById('addPostcode').value.trim();
+            const fullName = document.getElementById('addFullName').value.trim();
+            const phoneNumber = document.getElementById('addPhoneNumber').value.trim();
+            const email = (document.getElementById('addEmail').value || '').trim();
+            const notes = (document.getElementById('addNotes').value || '').trim();
+            const hours = document.getElementById('addHours').value;
+            const homeSize = document.getElementById('addHomeSize').value;
+
+            // Basic validation
+            if (!serviceType || !bookingDate || !bookingTime || !area || !streetAddress || !postcode || !fullName || !phoneNumber) {
+                showToast('error', 'Sila lengkapkan semua medan wajib');
+                return;
+            }
+            if (serviceType === 'hourly_cleaning' && (!hours || isNaN(parseInt(hours, 10)))) {
+                showToast('error', 'Jam diperlukan untuk pembersihan mengikut jam');
+                return;
+            }
+            if (serviceType !== 'hourly_cleaning' && !homeSize) {
+                showToast('error', 'Sila pilih saiz rumah');
+                return;
+            }
+
+            // Price estimate
+            let estimatedPrice = 0;
+            if (serviceType === 'hourly_cleaning') {
+                estimatedPrice = (serviceData.hourly_cleaning?.basePrice || 25) * parseInt(hours, 10);
+            } else {
+                const svc = serviceData[serviceType];
+                const base = svc?.basePrice || 0;
+                const mult = (svc?.priceMultiplier || {})[homeSize] || 1;
+                estimatedPrice = Math.round(base * mult);
+            }
+
+            const bookingRef = (typeof generateBookingReference === 'function') ? generateBookingReference() : `MANUAL-${Date.now()}`;
+            const payload = {
+                serviceType,
+                bookingDate,
+                bookingTime,
+                area,
+                streetAddress,
+                postcode,
+                fullName,
+                phoneNumber,
+                notes,
+                email,
+                bookingRef,
+                estimatedPrice,
+                ...(serviceType === 'hourly_cleaning' ? { hours: parseInt(hours, 10) } : { homeSize })
+            };
+
+            try {
+                const resp = await fetch(window.apiUtils.createApiUrl('/bookings'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) {
+                    let err = 'Gagal menambah tempahan';
+                    try { const data = await resp.json(); err = data.error || err; } catch {}
+                    throw new Error(err);
+                }
+                const data = await resp.json();
+                // Merge into local state for dashboard display
+                const localNew = {
+                    ...payload,
+                    id: data?.id || Date.now().toString(),
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                allBookings.push(localNew);
+                localStorage.setItem('bookings', JSON.stringify(allBookings));
+                updateStats();
+                filterBookings();
+                showToast('success', 'Tempahan ditambah');
+                // Reset form and return to All view
+                (document.getElementById('addBookingForm')).reset();
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = document.getElementById('addBookingDate');
+                if (dateInput) dateInput.value = today;
+                switchView('all');
+            } catch (err) {
+                console.error('Add booking error:', err);
+                showToast('error', err.message || 'Gagal menambah tempahan');
+            }
+        }
+        function filteredUsersForAccounts() {
+            let list = usersCache.slice();
+            if (usersFilterText) {
+                list = list.filter(u => (u.email || '').toLowerCase().includes(usersFilterText) || (u.name || '').toLowerCase().includes(usersFilterText));
+            }
+            if (usersFilterRole) {
+                list = list.filter(u => (u.role || '') === usersFilterRole);
+            }
+            return list;
+        }
+        function applyUsersFilters() {
+            renderUsersPage();
+        }
+        function renderUsersPage() {
+            const all = filteredUsersForAccounts();
+            if (!Array.isArray(all) || all.length === 0) {
+                const tbody = document.getElementById('usersTable');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">Tiada pengguna</td></tr>`;
+                const info = document.getElementById('usersPageInfo');
+                if (info) info.textContent = 'Halaman 0/0';
+                return;
+            }
+            const totalPages = Math.ceil(all.length / usersPageSize);
+            if (usersPage > totalPages) usersPage = totalPages;
+            const start = (usersPage - 1) * usersPageSize;
+            const slice = all.slice(start, start + usersPageSize);
+            renderUsers(slice);
+            const info = document.getElementById('usersPageInfo');
+            if (info) info.textContent = `Halaman ${usersPage}/${totalPages}`;
+            const prevBtn = document.getElementById('usersPrev');
+            const nextBtn = document.getElementById('usersNext');
+            if (prevBtn) prevBtn.disabled = usersPage <= 1;
+            if (nextBtn) nextBtn.disabled = usersPage >= totalPages;
+        }
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTable');
+            if (!tbody) return;
+            tbody.innerHTML = (Array.isArray(users) ? users : []).map(u => {
+                const safeEmail = (u.email || '').replace(/\"/g, '&quot;');
+                const roleUserSelected = (u.role === 'user') ? 'selected' : '';
+                const roleAdminSelected = (u.role === 'admin') ? 'selected' : '';
+                const nameVal = u.name || '';
+                return `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-slate-800">${safeEmail}</td>
+                        <td class="px-6 py-4"><input id="name-${safeEmail}" class="search-input w-full" value="${nameVal}" placeholder="Nama"></td>
+                        <td class="px-6 py-4">
+                            <select id="role-${safeEmail}" class="filter-select w-full">
+                                <option value="user" ${roleUserSelected}>Pengguna</option>
+                                <option value="admin" ${roleAdminSelected}>Admin</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4"><input id="pwd-${safeEmail}" class="search-input w-full" type="password" placeholder="Set kata laluan baru (min 8)"></td>
+                        <td class="px-6 py-4">
+                            <button class="action-btn" onclick="updateUserRow('${safeEmail}')">Simpan</button>
+                            <button class="action-btn call-btn" onclick="deleteUserRow('${safeEmail}')">Padam</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        function validatePassword(pwd) {
+            if (!pwd || pwd.length < 8) return false;
+            const hasLetter = /[A-Za-z]/.test(pwd);
+            const hasNumber = /\d/.test(pwd);
+            return hasLetter && hasNumber;
+        }
+        async function handleCreateUser() {
+            const email = document.getElementById('newUserEmail').value.trim();
+            const name = document.getElementById('newUserName').value.trim();
+            const password = document.getElementById('newUserPassword').value.trim();
+            const role = document.getElementById('newUserRole').value;
+            const msgEl = document.getElementById('usersMessage');
+            if (!email || !password) { msgEl.textContent = 'Email dan kata laluan diperlukan.'; showToast('error', 'Email dan kata laluan diperlukan'); return; }
+            if (!validateEmail(email)) { msgEl.textContent = 'Format email tidak sah.'; showToast('error', 'Format email tidak sah'); return; }
+            if (!validatePassword(password)) { msgEl.textContent = 'Kata laluan min 8, gabung huruf & nombor.'; showToast('error', 'Kata laluan tidak kuat'); return; }
+            if (usersCache.some(u => (u.email || '').toLowerCase() === email.toLowerCase())) { msgEl.textContent = 'Email sudah wujud.'; showToast('error', 'Email sudah wujud'); return; }
+            const createBtn = document.getElementById('createUserBtn');
+            if (createBtn) { createBtn.disabled = true; createBtn.classList.add('opacity-50'); }
+            try {
+                const response = await fetch(window.apiUtils.createApiUrl('/users'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Role': localStorage.getItem('userRole') || '' },
+                    body: JSON.stringify({ email, name, password, role })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Gagal menambah pengguna');
+                msgEl.textContent = 'Pengguna ditambah.';
+                showToast('success', 'Pengguna ditambah');
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserName').value = '';
+                document.getElementById('newUserPassword').value = '';
+                document.getElementById('newUserRole').value = 'user';
+                await loadUsers();
+            } catch (err) {
+                console.error('Create user error:', err);
+                msgEl.textContent = 'Gagal menambah pengguna.';
+                showToast('error', 'Gagal menambah pengguna');
+            } finally {
+                if (createBtn) { createBtn.disabled = false; createBtn.classList.remove('opacity-50'); }
+            }
+        }
+        async function updateUserRow(email) {
+            const role = document.getElementById(`role-${email}`).value;
+            const name = document.getElementById(`name-${email}`).value;
+            const password = document.getElementById(`pwd-${email}`).value;
+            const updates = {};
+            if (role) updates.role = role;
+            if (typeof name !== 'undefined') updates.name = name;
+            if (password) {
+                if (!validatePassword(password)) { document.getElementById('usersMessage').textContent = 'Kata laluan min 8, gabung huruf & nombor.'; showToast('error', 'Kata laluan tidak kuat'); return; }
+                updates.password = password;
+            }
+            document.querySelectorAll('.action-btn').forEach(b => b.disabled = true);
+            try {
+                const response = await fetch(window.apiUtils.createApiUrl(`/users/${encodeURIComponent(email)}`), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Role': localStorage.getItem('userRole') || '' },
+                    body: JSON.stringify(updates)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Gagal mengemaskini');
+                document.getElementById('usersMessage').textContent = 'Pengguna dikemaskini.';
+                showToast('success', 'Pengguna dikemaskini');
+                await loadUsers();
+            } catch (err) {
+                console.error('Update user error:', err);
+                document.getElementById('usersMessage').textContent = 'Gagal mengemaskini pengguna.';
+                showToast('error', 'Gagal mengemaskini pengguna');
+            } finally {
+                document.querySelectorAll('.action-btn').forEach(b => b.disabled = false);
+            }
+        }
+        async function deleteUserRow(email) {
+            if (!confirm('Padam pengguna ini?')) return;
+            document.querySelectorAll('.action-btn').forEach(b => b.disabled = true);
+            try {
+                const response = await fetch(window.apiUtils.createApiUrl(`/users/${encodeURIComponent(email)}`), {
+                    method: 'DELETE',
+                    headers: { 'X-User-Role': localStorage.getItem('userRole') || '' }
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Gagal memadam');
+                document.getElementById('usersMessage').textContent = 'Pengguna dipadam.';
+                showToast('success', 'Pengguna dipadam');
+                await loadUsers();
+            } catch (err) {
+                console.error('Delete user error:', err);
+                document.getElementById('usersMessage').textContent = 'Gagal memadam pengguna.';
+                showToast('error', 'Gagal memadam pengguna');
+            } finally {
+                document.querySelectorAll('.action-btn').forEach(b => b.disabled = false);
+            }
+        }
+
         function initializeAdminDashboard() {
             // Load bookings from localStorage
             allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
@@ -471,24 +1042,7 @@
             document.getElementById('dateFilter').addEventListener('change', filterBookings);
         }
         
-        function switchView(view) {
-            currentView = view;
-            
-            // Update navigation active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-view="${view}"]`).classList.add('active');
-            
-            // Update date filter based on view
-            if (view === 'today') {
-                document.getElementById('dateFilter').value = 'today';
-            } else if (view === 'all') {
-                document.getElementById('dateFilter').value = 'all';
-            }
-            
-            filterBookings();
-        }
+        /* duplicate switchView removed; unified logic exists above with Accounts UI support */
         
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
@@ -756,17 +1310,3 @@
     </script>
 </body>
 </html>
-
-// Check login state
-if (!localStorage.getItem('loggedIn') || localStorage.getItem('userRole') !== 'admin') {
-    window.location.href = 'login.html';
-}
-
-// Logout function
-function logout() {
-    localStorage.removeItem('loggedIn');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('savedEmail');
-    window.location.href = 'login.html';
-}

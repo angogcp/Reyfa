@@ -745,7 +745,10 @@ function handleFormInput(event) {
     if (AppState.currentStep === 1 && (fieldName === 'homeSize' || fieldName === 'serviceType' || fieldName === 'hours')) {
         updatePriceEstimate();
     }
-    checkStepCompletion();
+    // Only invoke booking step completion check when available (booking page)
+    if (typeof window !== 'undefined' && typeof window.checkStepCompletion === 'function') {
+        window.checkStepCompletion();
+    }
     
     // Validate field
     validateField(event);
