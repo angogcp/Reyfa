@@ -6,12 +6,11 @@
  * - In Vercel: uses /api paths
  */
 function getApiBaseUrl() {
-  // Check if we're in a Vercel environment
-  const isVercel = typeof window !== 'undefined' && 
-                  (window.location.hostname.includes('vercel.app') || 
-                   window.location.hostname === 'reyfa.vercel.app');
-  
-  return isVercel ? '/api' : '';
+  // Detect local dev vs deployed environment (supports custom domains)
+  const isBrowser = typeof window !== 'undefined';
+  const host = isBrowser ? (window.location.hostname || '') : '';
+  const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+  return isLocal ? '' : '/api';
 }
 
 /**
